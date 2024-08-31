@@ -1,6 +1,8 @@
       PROGRAM TIME_DEST_PROFILE
       IMPLICIT REAL*8 (a-h,o-z)
-c      IMPLICIT INTEGER (i-n)
+      IMPLICIT INTEGER (i-k)
+      
+      
 c      COMMON /ALFA(8)/
       COMMON CHILOMETRO,SOLARMASS,PARSEC,GGG,AU,SOLARLUM
 c      PARAMETER (Nmax=10000)
@@ -10,6 +12,7 @@ c      PARAMETER (Nmax=10000)
 c      REAL*8 rStep
       CHARACTER*8 nameCluster
       CHARACTER*12 buffer12
+      CHARACTER*4  buffer4
  
  
 C    THIS PROGRAM CALCULATES THE TIME FOR DESTABILIZING AN ORBIT OF A 
@@ -22,7 +25,7 @@ C    CANDIDATE LIFE HOST PLANET IN A GC
        AU         = 1.5d13  ! cm
        YEAR       = 3.2d7   ! s
 1     FORMAT (A8,A12,f6.2,A12,f4.2,A12,f4.2) 
-
+2     FORMAT (F6.2,A4,f4.2) 
        PI=4*atan(1.0)
 C     Legge da file il nome del cluster e tutti gli altri parametri
       OPEN(UNIT=0, FILE='Dati_GCs.dat', ACTION='READ', STATUS='OLD', 
@@ -69,19 +72,42 @@ c calcolo il tempo di di destabilizzazione per il raggio del core
       WRITE(*,*) "stellar density mean =", densityCore 
       WRITE(*,*) "time in yr =", timeYear 
       
+c calcolo un profilo di tempo per i tempi di destabilizzazione 
+c con i dati forniti dal DataBase online
+c https://people.smp.uq.edu.au/HolgerBaumgardt/globular/veldis.html
+c messi in un apposito file
+      
+3     FORMAT (F6.2) 
       
       
+      OPEN(UNIT=1, FILE='NGC_6397_r.dat', ACTION='READ', STATUS='OLD',
+     & IOSTAT= KODE0 )
+      OPEN(UNIT=2, FILE='NGC_6397_v.dat', ACTION='READ', STATUS='OLD',
+     & IOSTAT= KODE1 )
+      READ(1,*) ! SKIP THE FIRST TWO LINES IN BOTH FILES
+      READ(1,*) 
+      READ(2,*) 
+      READ(2,*) 
+      READ (1, FMT =3) RSTEP0
+      READ (2, FMT =3) VSTEP0
+      WRITE(*,*) RSTEP0, VSTEP0, KODE0, KODE1
+   
+       
+11    DO       
       
-      
-      
-      
-      
+      READ (1, FMT=3) RSTEP
+      READ (2, FMT=3) VSTEP
+      IF(RSTEP == 0 .OR. VSTEP == 0) GO TO 12
+      WRITE(*,*) RSTEP, VSTEP, KODE0, KODE1
+      RSTEP0 = RSTEP
+      VSTEP0 = VSTEP
+      IF(KODE0 .LT. 1 .AND. KODE1 .LT. 1) GO TO 11
+      END DO
 
+12    CONTINUE
+      
+      CLOSE(1)
+      CLOSE(2)
 
-     
-        
-      
-      
-      
       
       END PROGRAM TIME_DEST_PROFILE
