@@ -1,18 +1,13 @@
       PROGRAM TIME_DEST_PROFILE
-      IMPLICIT REAL*8 (a-h,o-z)
-      IMPLICIT INTEGER (i-k)
+      IMPLICIT REAL*8 (A-H,L-Z)
+      IMPLICIT INTEGER (I-K)
       
-      
-c      COMMON /ALFA(8)/
-      COMMON CHILOMETRO,SOLARMASS,PARSEC,GGG,AU,SOLARLUM
-c      PARAMETER (Nmax=10000)
-     
-      REAL*8 massTotSM, massTot,massMeanSM, massMean,PI,massStarTestSM,
-     & massStarTest
-c      REAL*8 rStep
-      CHARACTER*8 nameCluster
-      CHARACTER*12 buffer12
-      CHARACTER*4  buffer4
+      COMMON /A/ CHILOMETRO,SOLARMASS,GGG,AU,YEAR
+      COMMON /B/ DISTANCESUN,PARSEC
+
+      CHARACTER*8 NAMECLUSTER
+      CHARACTER*12 BUFFER12
+      CHARACTER*4  BUFFER4
  
  
 C    THIS PROGRAM CALCULATES THE TIME FOR DESTABILIZING AN ORBIT OF A 
@@ -21,61 +16,66 @@ C    CANDIDATE LIFE HOST PLANET IN A GC
        SOLARMASS  = 1.99d33 ! gr
        PARSEC     = 3.09d18 ! cm
        GGG        = 6.67d-8 ! dyne cm**2/g
-       SOLARLUM   = 3.9d33  ! erg/s
        AU         = 1.5d13  ! cm
        YEAR       = 3.2d7   ! s
-1     FORMAT (A8,A12,f6.2,A12,f4.2,A12,f4.2) 
-2     FORMAT (F6.2,A4,f4.2) 
-       PI=4*atan(1.0)
-C     Legge da file il nome del cluster e tutti gli altri parametri
+1     FORMAT (A8,A12,F6.2,A12,F4.2,A12,F3.2,A12,F4.2) 
+2     FORMAT (F6.2,A4,F4.2) 
+       PI=4*ATAN(1.0)
+C     LEGGE DA FILE IL NOME DEL CLUSTER E TUTTI GLI ALTRI PARAMETRI
+
+    
       OPEN(UNIT=0, FILE='Dati_GCs.dat', ACTION='READ', STATUS='OLD', 
      & IOSTAT= KODE)
      
       IF (KODE .NE. 0) THEN 
-      WRITE (*,*) 'Dati_GCs.dat cannot be opened'
+      WRITE (*,*) 'Dati_GCs.dat CANNOT BE OPENED'
       END IF
       
       READ(0,*) ! SKIP THE FIRST LINE
       READ(0,*) ! SKIP THE SECOND LINE
      
-      READ(0, FMT=1) nameCluster,buffer12,massTotSM,buffer12,
-     & radiusCorePC,buffer12,massMeanSM          
-      WRITE(*,*) nameCluster,  massTotSM, radiusCorePC, massMeanSM
+      READ(0, FMT=1) NAMECLUSTER,BUFFER12,MASSTOTSM,BUFFER12,
+     & RADIUSCOREPC,BUFFER12,MASSMEANSM, BUFFER12, DISTANCESUN       
+      WRITE(*,*) "namecluster ",NAMECLUSTER
+      WRITE(*,*) "total mass in solar masses =",  MASSTOTSM
+      WRITE(*,*) "Core radius in pc = ", RADIUSCOREPC
+      WRITE(*,*) "mean mass in solar masses =",MASSMEANSM
+      WRITE(*,*) "distance from sun in kpc =",DISTANCESUN
       CLOSE(0)
       
-      radiusCore = radiusCorePC*PARSEC
-      massTot    = massTotSM *SOLARMASS
-      massMean   = massMeanSM *SOLARMASS
-c     calcolo il raggio di cattura da Gliese 74
-c     raggio orbitale =  0.04*AU
-      massStarTestSM = 0.1 ! in solar masses: per ogni valore se 
-c     questo parametro cambia deve cambiare anche orbRadius come 
-c     in figura
-      massStarTest = massStarTestSM*SOLARMASS
-      orbRadius    = 0.04*AU
-      dest = orbRadius * (2*massMeanSM/massStarTestSM)**(1./3.)
+      RADIUSCORE = RADIUSCOREPC*PARSEC
+      MASSTOT    = MASSTOTSM *SOLARMASS
+      MASSMEAN   = MASSMEANSM *SOLARMASS
+C     CALCOLO IL RAGGIO DI CATTURA DA GLIESE 74
+C     RAGGIO ORBITALE =  0.04*AU
+      MASSSTARTESTSM = 0.1 ! IN SOLAR MASSES: PER OGNI VALORE SE 
+C     QUESTO PARAMETRO CAMBIA DEVE CAMBIARE ANCHE ORBRADIUS COME 
+C     IN FIGURA
+      MASSSTARTEST = MASSSTARTESTSM*SOLARMASS
+      ORBRADIUS    = 0.04*AU
+      DEST = ORBRADIUS * (2*MASSMEANSM/MASSSTARTESTSM)**(1./3.)
       
-c calcolo il tempo di di destabilizzazione per il raggio del core
+C CALCOLO IL TEMPO DI DI DESTABILIZZAZIONE PER IL RAGGIO DEL CORE
       
-      sigmaQuad    = massTot*GGG/(2*radiusCore)
-      sigma  = SQRT(sigmaQuad)
-      densityCore = 3*massTotSM/(8*massMeanSM*PI*radiusCore**3)
-      focusingG  = (dest**2 + (GGG*massStarTest*dest)/
-     & sigmaQuad)
-      time = 1/(4* SQRT(PI) * sigma *densityCore*focusingG) 
-      timeYear = time/Year 
+      SIGMAQUAD    = MASSTOT*GGG/(2*RADIUSCORE)
+      SIGMA  = SQRT(SIGMAQUAD)
+      DENSITYCORE = 3*MASSTOTSM/(8*MASSMEANSM*PI*RADIUSCORE**3)
+      FOCUSINGG  = (DEST**2 + (GGG*MASSSTARTEST*DEST)/
+     & SIGMAQUAD)
+      TIME = 1/(4* SQRT(PI) * SIGMA *DENSITYCORE*FOCUSINGG) 
+      TIMEYEAR = TIME/YEAR 
       
-      WRITE(*,*) "massStarTestSM in g =", massStarTestSM*SOLARMASS
-      WRITE(*,*) "orbital Radius in cm =", orbRadius 
-      WRITE(*,*) "destabilization radius in cm =", dest 
-      WRITE(*,*) "mean velocity in cm/s = ", sigma
-      WRITE(*,*) "stellar density mean =", densityCore 
-      WRITE(*,*) "time in yr =", timeYear 
+      WRITE(*,*) "massstartestsm in g =", MASSSTARTESTSM*SOLARMASS
+      WRITE(*,*) "orbital radius in cm =", ORBRADIUS 
+      WRITE(*,*) "destabilization radius in cm =", DEST 
+      WRITE(*,*) "mean velocity in cm/s = ", SIGMA
+      WRITE(*,*) "stellar density mean in (cm)^-3 =", DENSITYCORE 
+      WRITE(*,*) "time in yr =", TIMEYEAR 
       
-c calcolo un profilo di tempo per i tempi di destabilizzazione 
-c con i dati forniti dal DataBase online
-c https://people.smp.uq.edu.au/HolgerBaumgardt/globular/veldis.html
-c messi in un apposito file
+C CALCOLO UN PROFILO DI TEMPO PER I TEMPI DI DESTABILIZZAZIONE 
+C CON I DATI FORNITI DAL DATABASE ONLINE
+C https://people.smp.uq.edu.au/HolgerBaumgardt/globular/veldis.html
+C MESSI IN UN APPOSITO FILE
       
 3     FORMAT (F6.2) 
       
@@ -88,26 +88,50 @@ c messi in un apposito file
       READ(1,*) 
       READ(2,*) 
       READ(2,*) 
-      READ (1, FMT =3) RSTEP0
-      READ (2, FMT =3) VSTEP0
-      WRITE(*,*) RSTEP0, VSTEP0, KODE0, KODE1
-   
-       
+      READ (1, FMT =3) R
+      READ (2, FMT =3) V
+
 11    DO       
       
-      READ (1, FMT=3) RSTEP
-      READ (2, FMT=3) VSTEP
-      IF(RSTEP == 0 .OR. VSTEP == 0) GO TO 12
-      WRITE(*,*) RSTEP, VSTEP, KODE0, KODE1
-      RSTEP0 = RSTEP
-      VSTEP0 = VSTEP
+      READ (1, FMT=3) R
+      READ (2, FMT=3) V
+      IF(R == 0 .OR. V == 0) GO TO 12
+      WRITE(*,*) "r (arcsec)= ", R
+      WRITE(*,*) "v (cm/s)= ", V
+      MASSA = (R_ARCSEC_2_CM(R))*((CHILOMETRO*V)**2)/GGG
+      WRITE(*,*) "r (arcsec)= ", R
+      WRITE(*,*) "v (km/s)= ", V
+      WRITE(*,*) "massa_r (g)= ", MASSA
+     
+      
       IF(KODE0 .LT. 1 .AND. KODE1 .LT. 1) GO TO 11
       END DO
 
 12    CONTINUE
-      
+      WRITE(*,*) "massa_tot (solarmasses)= ", MASSA/SOLARMASS
+      WRITE(*,*) "massa_tot_prec (solarmasses)= ", MASStotsm
       CLOSE(1)
       CLOSE(2)
 
       
       END PROGRAM TIME_DEST_PROFILE
+    
+C     CONVERTO IL RAGGIO DA ARCOSECONDI A PARSEC E POI IN CENTIMETRI
+C     CON UNA FUNZIONE
+ 
+      REAL*8 FUNCTION R_ARCSEC_2_CM(R_ARC)
+      REAL*8 R_ARC, DISTANCESUN, PARSEC
+      COMMON /B/ DISTANCESUN, PARSEC
+      WRITE(*,*) "PC & DISTANCESUN =", PARSEC, DISTANCESUN
+      R_ARCSEC_2_CM = R_ARC*DISTANCESUN*1000*PARSEC/206265 
+      WRITE(*,*) "r_cm =", R_ARCSEC_2_CM
+      RETURN 
+      END 
+      
+      
+      
+      
+       
+
+
+
