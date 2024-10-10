@@ -1,160 +1,199 @@
-      PROGRAM TIME_DEST_PROFILE
-      IMPLICIT REAL*8 (A-H,L-Z)
-      IMPLICIT INTEGER (I-K)
+      program time_dest_profile
+      implicit real*8 (a-h,l-z)
+      implicit integer (i-k)
       
-      COMMON /A/ CHILOMETRO,SOLARMASS,GGG,AU,YEAR
-      COMMON /B/ DISTANCESUN,PARSEC
+      common /a/ chilometro,solarmass,ggg,au,year, pi
+      common /b/ distancesun, parsec
 
-      CHARACTER*8 NAMECLUSTER
-      CHARACTER*12 BUFFER12
-      CHARACTER*4  BUFFER4
+      character*8 namecluster
+      character*12 buffer12
+      character*4  buffer4
  
  
-C    THIS PROGRAM CALCULATES THE TIME FOR DESTABILIZING AN ORBIT OF A 
-C    CANDIDATE LIFE HOST PLANET IN A GC 
-       CHILOMETRO = 1.d5    ! cm
-       SOLARMASS  = 1.99d33 ! gr
-       PARSEC     = 3.09d18 ! cm
-       GGG        = 6.67d-8 ! dyne cm**2/g
-       AU         = 1.5d13  ! cm
-       YEAR       = 3.2d7   ! s
-1     FORMAT (A8,A12,F6.2,A12,F4.2,A12,F3.2,A12,F4.2,A12,F5.2) 
-2     FORMAT (F6.2,A4,F4.2) 
-       PI=4*ATAN(1.0)
-C     LEGGE DA FILE IL NOME DEL CLUSTER E TUTTI GLI ALTRI PARAMETRI
+c    this program calculates the time for destabilizing an orbit of a 
+c    candidate life host planet in a gc 
+
+       chilometro = 1.d5    ! cm
+       solarmass  = 1.99d33 ! gr
+       parsec     = 3.09d18 ! cm
+       ggg        = 6.67d-8 ! dyne cm**2/g
+       au         = 1.5d13  ! cm
+       year       = 3.2d7   ! s
+       pi=4*atan(1.0)
+       
+1     format (a8,a12,f6.2,a12,f4.2,a12,f3.2,a12,f4.2,a12,f5.2) 
+2     format (f6.2,a4,f4.2) 
+       
+       
+c     read from file name cluster and other parametrers proper of the 
+c     cluster itself
 
     
-      OPEN(UNIT=0, FILE='Dati_GCs.dat', ACTION='READ', STATUS='OLD', 
-     & IOSTAT= KODE0)
+      open(unit=0, file='Dati_GCs.dat', action='read', status='old', 
+     & iostat= kode0)
      
-      IF (KODE0 .NE. 0) THEN 
-      WRITE (*,*) 'Dati_GCs.dat CANNOT BE OPENED'
-      END IF
+      if (kode0 .ne. 0) then 
+      write (*,*) 'Dati_GCs.dat cannot be opened'
+      end if
       
-      READ(0,*) ! SKIP THE FIRST LINE
-      READ(0,*) ! SKIP THE SECOND LINE
+      read(0,*) ! skip the first line
+      read(0,*) ! skip the second line
      
-      READ(0, FMT=1) NAMECLUSTER,BUFFER12,MASSTOTSM,BUFFER12,
-     & RADIUSCOREPC,BUFFER12,MASSMEANSM,BUFFER12,DISTANCESUN,
-     & BUFFER12,DELTA_SIS_DIST       
-      WRITE(*,*) "namecluster ",NAMECLUSTER
-      WRITE(*,*) "total mass in solar masses =",  MASSTOTSM
-      WRITE(*,*) "Core radius in pc = ", RADIUSCOREPC
-      WRITE(*,*) "mean mass in solar masses =",MASSMEANSM
-      WRITE(*,*) "distance from sun in kpc =",DISTANCESUN
-      WRITE(*,*) "delta_dist_from_Sun in pc =",DELTA_SIS_DIST
-      CLOSE(0)
+      read(0, fmt=1) namecluster,buffer12,masstotsm,buffer12,
+     & radiuscorepc,buffer12,massmeansm,buffer12,distancesun,
+     & buffer12,delta_sis_dist       
+      write(*,*) "namecluster ",namecluster
+      write(*,*) "total mass in solar masses =",  masstotsm
+      write(*,*) "core radius in pc = ", radiuscorepc
+      write(*,*) "mean mass in solar masses =",massmeansm
+      write(*,*) "distance from sun in kpc =",distancesun
+      write(*,*) "delta_dist_from_sun in pc =",delta_sis_dist
+      close(0)
       
-      RADIUSCORE = RADIUSCOREPC*PARSEC
-      MASSTOT    = MASSTOTSM *SOLARMASS
-      MASSMEAN   = MASSMEANSM *SOLARMASS
-C     CALCOLO IL RAGGIO DI CATTURA DA GLIESE 74
-C     RAGGIO ORBITALE =  0.04*AU
-      MASSSTARTESTSM = 0.1 ! IN SOLAR MASSES: PER OGNI VALORE SE 
-C     QUESTO PARAMETRO CAMBIA DEVE CAMBIARE ANCHE ORBRADIUS COME 
-C     IN FIGURA
-      MASSSTARTEST = MASSSTARTESTSM*SOLARMASS
-      ORBRADIUS    = 0.04*AU
-      DEST = ORBRADIUS * (2*MASSMEANSM/MASSSTARTESTSM)**(1./3.)
+      radiuscore = radiuscorepc*parsec
+      masstot    = masstotsm *solarmass
+      massmean   = massmeansm *solarmass
+c     calculus of the capture radius of gliese 74
+c     capture radius is 0.04 AU
+      massstartestsm = 0.1 ! in solar masses
+c     this parameter is going to change as in figure
+      massstartest = massstartestsm*solarmass
+      orbradius    = 0.04*au
+      dest = orbradius * (2*massmeansm/massstartestsm)**(1./3.)
       
-C CALCOLO IL TEMPO DI DI DESTABILIZZAZIONE PER IL RAGGIO DEL CORE
+c calcolo il tempo di di destabilizzazione per il raggio del core
       
-      SIGMAQUAD    = MASSTOT*GGG/(6*RADIUSCORE)
-      SIGMA  = SQRT(SIGMAQUAD)
-      DENSITYCORE = 3*MASSTOTSM/(8*MASSMEANSM*PI*RADIUSCORE**3)
-      FOCUSINGG  = (DEST**2 + (GGG*MASSSTARTEST*DEST)/
-     & SIGMAQUAD)
-      TIME = 1/(4*SQRT(PI)*SIGMA*DENSITYCORE*FOCUSINGG) 
-      TIMEYEAR = TIME/YEAR 
+      sigmaquad    = masstot*ggg/(6*radiuscore)
+      sigma  = sqrt(sigmaquad)
+      densitycore = 3*masstotsm/(8*massmeansm*pi*radiuscore**3)
+      focusingg  = (dest**2 + (ggg*massstartest*dest)/
+     & sigmaquad)
+      time = 1/(4*sqrt(pi)*sigma*densitycore*focusingg) 
+      timeyear = time/year 
       
-      WRITE(*,*) "massstartestsm in g =", MASSSTARTESTSM*SOLARMASS
-      WRITE(*,*) "orbital radius in cm =", ORBRADIUS 
-      WRITE(*,*) "destabilization radius in cm =", DEST 
-      WRITE(*,*) "mean velocity in cm/s = ", SIGMA
-      WRITE(*,*) "stellar density mean in (cm)^-3 =", DENSITYCORE 
-      WRITE(*,*) "time in yr =", TIMEYEAR 
+      write(*,*) "massstartest in g =", massstartestsm*solarmass
+      write(*,*) "orbital radius in cm =", orbradius 
+      write(*,*) "destabilization radius in cm =", dest 
+      write(*,*) "mean velocity in cm/s = ", sigma
+      write(*,*) "stellar density mean in (cm)^-3 =", densitycore 
+      write(*,*) "time in yr =", timeyear 
       
-C CALCOLO UN PROFILO DI TEMPO PER I TEMPI DI DESTABILIZZAZIONE 
-C CON I DATI FORNITI DAL DATABASE ONLINE
-C https://people.smp.uq.edu.au/HolgerBaumgardt/globular/veldis.html
-C MESSI IN UN APPOSITO FILE
+c calculus of the time of destabilization of an orbital planet traiectory
+c from the data presents on the online database 
+c https://people.smp.uq.edu.au/HolgerBaumgardt/globular/veldis.html
+c put in the files: Dati_GCs.dat and NGC_0000_r.dat and NGC_0000_v.dati
+c and so on for the error bands
       
-3     FORMAT (F6.2) 
+3     format (f6.2) 
       
       
-      OPEN(UNIT=1, FILE='NGC_6397_r.dat', ACTION='READ', STATUS='OLD',
-     & IOSTAT= KODE1 )
-      OPEN(UNIT=2, FILE='NGC_6397_v.dat', ACTION='READ', STATUS='OLD',
-     & IOSTAT= KODE2 )
-      OPEN(UNIT=3, FILE='NGC_6397_error_upper_v.dat', ACTION='READ',
-     & STATUS='OLD',IOSTAT= KODE3 )
-      OPEN(UNIT=4, FILE='NGC_6397_error_below_v.dat', ACTION='READ', 
-     & STATUS='OLD',IOSTAT= KODE4 )
-      READ(1,*) ! SKIP THE FIRST TWO LINES IN EVERY FILE
-      READ(1,*) 
-      READ(2,*) 
-      READ(2,*) 
-      READ(3,*) 
-      READ(3,*) 
-      READ(4,*) 
-      READ(4,*) 
-      
-11    DO       
-      
-      READ (1, FMT=3) R
-      READ (2, FMT=3) V
-      READ (3, FMT =3) DELTA_V_UP
-      READ (4, FMT =3) DELTA_V_LOW
-      WRITE(*,*) "r (arcsec)= ", R
-      WRITE(*,*) "v (km/s)= ", V
-      IF(R == 0 .OR. V == 0 .OR. DELTA_V_UP == 0 .OR. DELTA_V_LOW == 0)
-     & GO TO 12
-      V_CM = CHILOMETRO*V
-      DELTA_V_UP_CM = CHILOMETRO*DELTA_V_UP
-      DELTA_V_LOW_CM = CHILOMETRO*DELTA_V_LOW
-      R_CM = R_ARCSEC_2_CM(R)
-      WRITE(*,*) "r (cm)= ", R_CM
-      WRITE(*,*) "v (cm/s)= ", V_CM
-      MASSA = (R_CM)*6*(V_CM**2)/GGG
-      DELTA_MASSA_UP = 2*MASSA*DELTA_V_UP_CM/(V_CM)
-      DELTA_MASSA_LOW = 2*MASSA*DELTA_V_LOW_CM/(V_CM)
-      DELTA_MASSA_SIS = MASSA*DELTA_SIS_DIST/(DISTANCESUN*1000)
-      WRITE(*,*) "massa_r (g)= ", MASSA
+      open(unit=1, file='NGC_6397_r.dat', action='read', status='old',
+     & iostat= kode1 )
+      open(unit=2, file='NGC_6397_v.dat', action='read', status='old',
+     & iostat= kode2 )
+      open(unit=3, file='NGC_6397_error_upper_v.dat', action='read',
+     & status='old',iostat= kode3 )
+      open(unit=4, file='NGC_6397_error_below_v.dat', action='read', 
+     & status='old',iostat= kode4 )
+      read(1,*) ! skip the first two lines in every file
+      read(1,*) 
+      read(2,*) 
+      read(2,*) 
+      read(3,*) 
+      read(3,*) 
+      read(4,*) 
+      read(4,*) 
+      open(unit=5, file='NGC_6397_lifetime_year.dat', action='write', 
+     & status='replace',iostat= kode5 )
      
+11    do       
       
-      IF(KODE0 .LT. 1 .AND. KODE1 .LT. 1 .AND. KODE2 .LT. 1 
-     & .AND. KODE3 .LT. 1) GO TO 11
-      END DO
+      read (1, fmt=3) r
+      read (2, fmt=3) v
+      read (3, fmt =3) delta_v_up
+      read (4, fmt =3) delta_v_low
+      write(*,*) "r (arcsec)= ", r
+      write(*,*) "v (km/s)= ", v
+      if(r == 0 .or. v == 0 .or. delta_v_up == 0 .or. delta_v_low == 0)
+     & go to 12
+      v_cm = chilometro*v
+      delta_v_up_cm = chilometro*delta_v_up
+      delta_v_low_cm = chilometro*delta_v_low
+      r_cm = r_arcsec_2_cm(r)
+      write(*,*) "r (cm)= ", r_cm
+      write(*,*) "v (cm/s)= ", v_cm
+      massa = (r_cm)*6*(v_cm**2)/ggg
+      
+      call  calculus_time_r(r_cm, v_cm, massa, dest, massmean, 
+     & massstartest)
+      
+      delta_massa_up = 2*massa*delta_v_up_cm/(v_cm)
+      delta_massa_low = 2*massa*delta_v_low_cm/(v_cm)
+      delta_massa_sis = massa*delta_sis_dist/(distancesun*1000)
+      write(*,*) "massa_r (g)= ", massa
+     
+       
+      if(kode0 .lt. 1 .and. kode1 .lt. 1 .and. kode2 .lt. 1 
+     & .and. kode3 .lt. 1) go to 11
+      end do
 
-12    CONTINUE
-
-      
-      WRITE(*,*) "massa_tot (solarmasses)= ", MASSA/SOLARMASS
-      WRITE(*,*) "delta_m_up(solarmasses)= ", DELTA_MASSA_UP/SOLARMASS
-      WRITE(*,*) "delta_m_low(solarmasses)= ", DELTA_MASSA_LOW/SOLARMASS
-      WRITE(*,*) "delta_m_sis(solarmasses)= ", DELTA_MASSA_SIS/SOLARMASS
-      WRITE(*,*) "massa_tot_prec (solarmasses)= ", MASSTOTSM
-      
-      CLOSE(1)
-      CLOSE(2)
-      CLOSE(3)
-      CLOSE(4)
+12    continue
 
       
-      END PROGRAM TIME_DEST_PROFILE
-    
-C     CONVERTO IL RAGGIO DA ARCOSECONDI A PARSEC E POI IN CENTIMETRI
-C     CON UNA FUNZIONE
+      write(*,*) "massa_tot (solarmasses)= ", massa/solarmass
+      write(*,*) "delta_m_up(solarmasses)= ", delta_massa_up/solarmass
+      write(*,*) "delta_m_low(solarmasses)= ", delta_massa_low/solarmass
+      write(*,*) "delta_m_sis(solarmasses)= ", delta_massa_sis/solarmass
+      write(*,*) "massa_tot_prec (solarmasses)= ", masstotsm
+      
+      close(1)
+      close(2)
+      close(3)
+      close(4)
+      close(5)
+      
+      end program time_dest_profile
+      
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc     
+c     functions and subroutines
+
+
+c     function to convert radius from arcsec to parsec and then to cm
  
-      REAL*8 FUNCTION R_ARCSEC_2_CM(R_ARC)
-      REAL*8 R_ARC, DISTANCESUN, PARSEC
-      COMMON /B/ DISTANCESUN, PARSEC
-      R_ARCSEC_2_CM = R_ARC*DISTANCESUN*1000*PARSEC/206265 
-      RETURN 
-      END 
+      real*8 function r_arcsec_2_cm(r_arc)
+      real*8 r_arc, distancesun, parsec
+      common /b/ distancesun, parsec
+      r_arcsec_2_cm = r_arc*distancesun*1000*parsec/206265 
+      return 
+      end 
+      
+c     subroutine for the calculus of the lifetime destabilization at arbitrary r
+      
+      subroutine calculus_time_r (r_cm, v_cm, massa, dest, massmean, 
+     & massstartest)
+     
+      implicit real*8 (a-h,l-z)
+      implicit integer (i-k)
+      
+      common /a/ chilometro,solarmass,ggg,au,year, pi
+      common /b/ distancesun, parsec
+4     format (f6.2,a4,f18.2) 
       
       
+      r = r_cm
+      v_r = v_cm
+      m_r = massa
+      sigmaquad_r = v_r**2
+      density_r = 3*m_r/(8*massmean*pi*r**3)
+      focusingg_r  = (dest**2 + (ggg*massstartest*dest)/
+     & sigmaquad_r)
       
+      time_r = 1/(4*sqrt(pi)*v_r*density_r*focusingg_r) 
+      timeyear_r = time_r/year 
+      
+      write (5,fmt =4) r/parsec,'    ', timeyear_r 
+      
+      end 
       
        
 
